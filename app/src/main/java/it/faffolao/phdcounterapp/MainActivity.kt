@@ -1,7 +1,6 @@
 package it.faffolao.phdcounterapp
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +14,6 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Remove
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import it.faffolao.phdcounterapp.counter.GradientNumber
+import it.faffolao.phdcounterapp.counter.ResetCountDialog
 import it.faffolao.phdcounterapp.navmenu.NavigationItem
 import it.faffolao.phdcounterapp.toolbars.Toolbar
 import it.faffolao.phdcounterapp.ui.theme.PHDCounterTheme
@@ -52,27 +51,41 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             PHDCounterTheme {
+                // valore del contatore
+                var count by remember {
+                    mutableIntStateOf(0)
+                }
+
+                // indica se le finestre di dialogo per il reset del contatore e le info sull'app
+                // sono aperte
+                var showResetDialog by remember { mutableStateOf(false) }
+                var showAboutUsDialog by remember { mutableStateOf(false) }
+
                 // elementi del menu hamburger
                 val navMenuItems = listOf(
                     NavigationItem(
                         title = "Add credit",
                         selectedIcon = Icons.Outlined.Add,
-                        unselectedIcon = Icons.Outlined.Add
+                        unselectedIcon = Icons.Outlined.Add,
+                        fn = { count++ }
                     ),
                     NavigationItem(
                         title = "Remove credit",
                         selectedIcon = Icons.Outlined.Remove,
-                        unselectedIcon = Icons.Outlined.Remove
+                        unselectedIcon = Icons.Outlined.Remove,
+                        fn = { count-- }
                     ),
                     NavigationItem(
                         title = "Reset credit count",
                         selectedIcon = Icons.Outlined.Refresh,
-                        unselectedIcon = Icons.Outlined.Refresh
+                        unselectedIcon = Icons.Outlined.Refresh,
+                        fn = { showResetDialog = true }
                     ),
                     NavigationItem(
                         title = "About this app",
                         selectedIcon = Icons.Outlined.Info,
-                        unselectedIcon = Icons.Outlined.Info
+                        unselectedIcon = Icons.Outlined.Info,
+                        fn = { showAboutUsDialog = true }
                     )
                 )
 
@@ -93,7 +106,7 @@ class MainActivity : ComponentActivity() {
                                             scope.launch {
                                                 drawerState.close()
                                             }
-                                            test(item.title)
+                                            item.fn(count)
                                         },
                                         icon = {
                                             Icon(imageVector = item.selectedIcon, contentDescription = item.title)
@@ -123,37 +136,46 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         ) { innerPadding ->
-                            var count by remember {
-                                mutableIntStateOf(0)
-                            }
                             Column(
                                 modifier = Modifier.fillMaxSize(),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 GradientNumber(count = count)
-                                Button(onClick = { count++ }) {
-                                    Text(text = "Add")
-                                }
-                                Button(onClick = { count-- }) {
-                                    Text(text = "Remove")
-                                }
                             }
                             Box(
-                                modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(innerPadding)
+                                    .padding(16.dp)
                             ) {
-                                Toolbar(modifier = Modifier.align(Alignment.BottomCenter))
+                                Toolbar(
+                                    modifier = Modifier.align(Alignment.BottomCenter),
+                                    onAddClick = { count++ },
+                                    onRemoveClick = { count-- },
+                                    onResetClick = { showResetDialog = true }
+                                )
+
+                                // visualizzo i dialogs quando vengono richiesti
+                                if (showResetDialog) {
+                                    ResetCountDialog(
+                                        onDismissRequest = { showResetDialog = false },
+                                        onConfirmation = { newValue ->
+                                            count = newValue
+                                            showResetDialog = false
+                                        }
+                                    )
+                                }
+                                if (showAboutUsDialog) {
+                                    AboutUsDialog (
+                                        onDismissRequest = { showResetDialog = false }
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
-
-    fun test(text: String) {
-        val duration = Toast.LENGTH_SHORT
-        val toast = Toast.makeText(this, text, duration)
-        toast.show()
     }
 }

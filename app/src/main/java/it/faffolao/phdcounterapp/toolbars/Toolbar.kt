@@ -14,9 +14,13 @@ import androidx.compose.ui.unit.dp
 import it.faffolao.phdcounterapp.R
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Preview
 @Composable
-fun Toolbar(modifier: Modifier = Modifier) {
+fun Toolbar(
+    modifier: Modifier = Modifier,
+    onAddClick: () -> Unit = {},
+    onResetClick: () -> Unit = {},
+    onRemoveClick: () -> Unit = {}
+) {
     HorizontalFloatingToolbar(
         modifier = modifier,
         expanded = true,
@@ -25,16 +29,29 @@ fun Toolbar(modifier: Modifier = Modifier) {
         // ombreggiatura della toolbar
         expandedShadowElevation = 3.dp
     ) {
-        listOf(
-            R.drawable.outline_add_24,
-            R.drawable.outline_autorenew_24,
-            R.drawable.outline_check_indeterminate_small_24
-        ).forEach { iconRes ->
-            IconButton(
-                onClick = { /*todo*/ }
-            ) {
-                Icon(imageVector = ImageVector.vectorResource(iconRes), contentDescription = "Add 1 credit")
-            }
+        IconButton(onClick = onAddClick) {
+            Icon(
+                imageVector = ImageVector.vectorResource(R.drawable.outline_add_24),
+                contentDescription = "Add 1 credit"
+            )
+        }
+        IconButton(onClick = onResetClick) {
+            Icon(
+                imageVector = ImageVector.vectorResource(R.drawable.outline_autorenew_24),
+                contentDescription = "Reset credits"
+            )
+        }
+        IconButton(onClick = onRemoveClick) {
+            Icon(
+                imageVector = ImageVector.vectorResource(R.drawable.outline_check_indeterminate_small_24),
+                contentDescription = "Remove 1 credit"
+            )
         }
     }
+}
+
+@Preview
+@Composable
+fun ToolbarPreview() {
+    Toolbar()
 }
