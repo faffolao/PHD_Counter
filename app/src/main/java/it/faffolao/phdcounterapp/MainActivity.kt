@@ -33,6 +33,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import it.faffolao.phdcounterapp.counter.GradientNumber
 import it.faffolao.phdcounterapp.navmenu.NavigationItem
 import it.faffolao.phdcounterapp.toolbars.Toolbar
 import it.faffolao.phdcounterapp.ui.theme.PHDCounterTheme
@@ -121,7 +122,7 @@ class MainActivity : ComponentActivity() {
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(text = "Hello World!")
+                                GradientNumber(numberText = 0)
                             }
                             Box(
                                 modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)
