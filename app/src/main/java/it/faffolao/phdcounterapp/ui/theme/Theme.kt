@@ -48,10 +48,15 @@ fun PHDCounterTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Imposta il colore della barra di stato (puoi usare colorScheme.primary o un altro colore)
-            window.statusBarColor = colorScheme.primary.toArgb()
-            // Imposta le icone scure se siamo in Light Mode (darkTheme = false)
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            // Imposta il colore della barra di stato e della barra di navigazione
+            // come il colore di sfondo del tema
+            window.statusBarColor = colorScheme.background.toArgb()
+            window.navigationBarColor = colorScheme.background.toArgb()
+            
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            // Imposta le icone scure (status bar e navigation bar) se siamo in Light Mode
+            insetsController.isAppearanceLightStatusBars = !darkTheme
+            insetsController.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 
