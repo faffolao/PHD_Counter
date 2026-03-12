@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.material3.window.size)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.core.ktx)
+    implementation(libs.androidx.datastore.preferences)
 
     testImplementation(libs.junit)
 

@@ -1,5 +1,6 @@
 package it.faffolao.phdcounterapp
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,23 +39,47 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import it.faffolao.phdcounterapp.counter.GradientNumber
 import it.faffolao.phdcounterapp.counter.ResetCountDialog
 import it.faffolao.phdcounterapp.navmenu.NavigationItem
 import it.faffolao.phdcounterapp.toolbars.Toolbar
 import it.faffolao.phdcounterapp.ui.theme.PHDCounterTheme
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
+// inizializzazione datastore
+private const val USER_PREFERENCES_NAME = "credits"
+private val Context.dataStore by preferencesDataStore(name = USER_PREFERENCES_NAME)
+val CREDIT_COUNT_KEY = intPreferencesKey("credit_count")
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             PHDCounterTheme {
-                // valore del contatore
-                var count by remember {
-                    mutableIntStateOf(0)
+                // ottenimento del valore dei crediti dal DataStore
+                val countFlow = remember {
+                    dataStore.data.map { preferences ->
+                        preferences[CREDIT_COUNT_KEY] ?: 0
+                    }
+                }
+                val count by countFlow.collectAsState(initial = 0)
+                val scope = rememberCoroutineScope()
+
+                // definizione funzione per l'aggiornamento della conta dei crediti sul DataStore
+                val updateCount = { newValue: Int ->
+                    scope.launch {
+                        dataStore.edit { preferences ->
+                            preferences[CREDIT_COUNT_KEY] = newValue
+                        }
+                    }
                 }
 
                 // indica se le finestre di dialogo per il reset del contatore e le info sull'app
@@ -67,13 +93,13 @@ class MainActivity : ComponentActivity() {
                         title = "Add credit",
                         selectedIcon = Icons.Outlined.Add,
                         unselectedIcon = Icons.Outlined.Add,
-                        fn = { count++ }
+                        fn = { updateCount(count + 1) }
                     ),
                     NavigationItem(
                         title = "Remove credit",
                         selectedIcon = Icons.Outlined.Remove,
                         unselectedIcon = Icons.Outlined.Remove,
-                        fn = { count-- }
+                        fn = { updateCount(count - 1) }
                     ),
                     NavigationItem(
                         title = "Reset credit count",
@@ -151,8 +177,8 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 Toolbar(
                                     modifier = Modifier.align(Alignment.BottomCenter),
-                                    onAddClick = { count++ },
-                                    onRemoveClick = { count-- },
+                                    onAddClick = { updateCount(count + 1) },
+                                    onRemoveClick = { updateCount(count - 1) },
                                     onResetClick = { showResetDialog = true }
                                 )
 
@@ -161,7 +187,7 @@ class MainActivity : ComponentActivity() {
                                     ResetCountDialog(
                                         onDismissRequest = { showResetDialog = false },
                                         onConfirmation = { newValue ->
-                                            count = newValue
+                                            updateCount(newValue)
                                             showResetDialog = false
                                         }
                                     )
