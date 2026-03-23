@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -55,9 +56,10 @@ fun AnimatedCounter(
             ) { char ->
                 Text(
                     text = char.toString(),
-                    fontSize = 90.sp,
+                    fontSize = 100.sp,
                     softWrap = false,
-                    color = contentColor.copy(alpha = 0.7f)
+                    color = contentColor.copy(alpha = 0.7f),
+                    fontWeight = FontWeight.Bold
                 )
             }
         }

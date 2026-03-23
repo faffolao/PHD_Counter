@@ -28,7 +28,7 @@ fun AboutUsDialog(onDismissRequest: () -> Unit) {
         },
         text = {
             Text(
-                text = "PHD Counter, version 1.0 \n" +
+                text = "PHD Counter, version 1.1 \n" +
                         "Written by Federico Arduini (faffolao) on March 2026."
             )
         }
