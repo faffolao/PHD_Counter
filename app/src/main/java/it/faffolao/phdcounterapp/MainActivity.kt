@@ -164,7 +164,10 @@ class MainActivity : ComponentActivity() {
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                GradientNumber(count = count)
+                                GradientNumber(
+                                    count = count,
+                                    onCounterClick = { updateCount(count - 1) }
+                                )
                             }
                             Box(
                                 modifier = Modifier
