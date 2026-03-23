@@ -21,7 +21,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun AnimatedCounter(
     count: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentColor: Color
 ) {
     var oldCount by remember {
         mutableIntStateOf(count)
@@ -56,7 +57,7 @@ fun AnimatedCounter(
                     text = char.toString(),
                     fontSize = 90.sp,
                     softWrap = false,
-                    color = Color.Black
+                    color = contentColor.copy(alpha = 0.7f)
                 )
             }
         }

@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
                         title = "Remove credit",
                         selectedIcon = Icons.Outlined.Remove,
                         unselectedIcon = Icons.Outlined.Remove,
-                        fn = { updateCount(count - 1) }
+                        fn = { if (count > 0) updateCount(count - 1) }
                     ),
                     NavigationItem(
                         title = "Reset credit count",
@@ -166,7 +166,7 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 GradientNumber(
                                     count = count,
-                                    onCounterClick = { updateCount(count - 1) }
+                                    onCounterClick = { if (count > 0) updateCount(count - 1) }
                                 )
                             }
                             Box(
@@ -178,7 +178,7 @@ class MainActivity : ComponentActivity() {
                                 Toolbar(
                                     modifier = Modifier.align(Alignment.BottomCenter),
                                     onAddClick = { updateCount(count + 1) },
-                                    onRemoveClick = { updateCount(count - 1) },
+                                    onRemoveClick = { if (count > 0) updateCount(count - 1) },
                                     onResetClick = { showResetDialog = true }
                                 )
 

@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.core.ktx)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.graphics.shapes)
 
     testImplementation(libs.junit)
 

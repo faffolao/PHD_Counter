@@ -1,6 +1,7 @@
 package it.faffolao.phdcounterapp.counter
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,78 +9,114 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.dropShadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.graphics.shapes.Morph
+import it.faffolao.phdcounterapp.MorphPolygonShape
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun GradientNumber(
     count: Int,
     onCounterClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // colori gradiente (count > 0)
-    val okTopColor = Color(0xFFFFDF75) // Giallo caldo
-    val okBottomColor = Color(0xFFCEFF7A) // Verde chiaro/lime
+    val shapes = remember {
+        listOf(
+            MaterialShapes.Circle,
+            MaterialShapes.Square,
+            MaterialShapes.Arch,
+            MaterialShapes.SoftBurst,
+            MaterialShapes.Pentagon,
+            MaterialShapes.Gem
+        )
+    }
 
-    // colori gradiente (count <= 0)
-    val zeroTopColor = Color(0xFFFE8181)
-    val zeroBottomColor = Color(0xFFFEEE72)
+    val shapeIndex = (if (count < 0) 0 else count) % shapes.size
 
-    // Animazione dei colori del gradiente
-    val topColor by animateColorAsState(
-        targetValue = if (count > 0) okTopColor else zeroTopColor,
-        animationSpec = tween(durationMillis = 300),
-        label = "TopColorAnimation"
+    var fromShape by remember { mutableStateOf(shapes[0]) }
+    var toShape by remember { mutableStateOf(shapes[shapeIndex]) }
+    val progress = remember { Animatable(0f) }
+
+    LaunchedEffect(shapeIndex) {
+        val targetShape = shapes[shapeIndex]
+        if (targetShape != toShape) {
+            fromShape = toShape
+            toShape = targetShape
+            progress.snapTo(0f)
+            progress.animateTo(1f, tween(durationMillis = 600))
+        }
+    }
+
+    val morph = remember(fromShape, toShape) {
+        Morph(fromShape, toShape)
+    }
+
+    val morphShape = remember(morph, progress.value) {
+        MorphPolygonShape(morph, progress.value)
+    }
+
+    // selezione dei colori Material 3 basata sul valore del contatore
+    val targetBackgroundColor = if (count > 0) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.errorContainer
+    }
+
+    val targetContentColor = if (count > 0) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onErrorContainer
+    }
+
+    // animazione del cambio di colori quando il valore del contatore è <= 0
+    val backgroundColor by animateColorAsState(
+        targetValue = targetBackgroundColor,
+        animationSpec = tween(durationMillis = 400),
+        label = "BackgroundColorAnimation"
     )
-    val bottomColor by animateColorAsState(
-        targetValue = if (count > 0) okBottomColor else zeroBottomColor,
-        animationSpec = tween(durationMillis = 300),
-        label = "BottomColorAnimation"
+
+    val contentColor by animateColorAsState(
+        targetValue = targetContentColor,
+        animationSpec = tween(durationMillis = 400),
+        label = "ContentColorAnimation"
     )
 
-    // disegno il Box che contiene il contatore animato (AnimatedCounter)
     Box(
         modifier = modifier
-            .size(width = 300.dp, height = 400.dp)
-            .dropShadow(
-                shape = RoundedCornerShape(16.dp),
-                shadow = Shadow(
-                    radius = 1.dp,
-                    spread = 0.dp,
-                    color = Color(0x40000000)
-                )
-            )
+            .size(size = 300.dp)
+
             .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(topColor, bottomColor)
-                ),
-                shape = RoundedCornerShape(16.dp),
+                color = backgroundColor,
+                shape = morphShape,
             )
+            .clip(morphShape)
             .clickable { onCounterClick() },
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Credits",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black.copy(alpha = 0.6f),
+                color = contentColor.copy(alpha = 0.7f), // Colore coerente con lo sfondo
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            AnimatedCounter(count = count)
+            AnimatedCounter(count = count, contentColor = contentColor)
         }
     }
 }
